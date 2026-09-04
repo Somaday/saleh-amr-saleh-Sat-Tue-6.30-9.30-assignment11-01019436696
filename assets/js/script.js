@@ -1,12 +1,12 @@
-// ==========================================
-// 1. إعدادات الـ APIs
-// ==========================================
+
+
+
 const NASA_API_URL =
-  "https://api.nasa.gov/planetary/apod?api_key=bU7WaOFtMVnWeJGvbySkFHQt5WestD49c69xOgQa";
+  "https:
 const LAUNCHES_API_URL =
-  "https://lldev.thespacedevs.com/2.3.0/launches/upcoming/?limit=10";
+  "https:
 const PLANETS_API_URL =
-  "https://solar-system-opendata-proxy.vercel.app/api/planets";
+  "https:
 const LAUNCH_PLACEHOLDER = "./assets/images/launch-placeholder.png";
 
 const planetImagePaths = {
@@ -36,14 +36,14 @@ const getLaunchImage = (launch) =>
 
 const getLaunchStatus = (launch) => launch.status?.abbrev || "TBD";
 
-// ==========================================
-// 2. قسم Today in Space (NASA APOD)
-// ==========================================
+
+
+
 async function fetchNASAData(date = "") {
   const url = date ? `${NASA_API_URL}&date=${date}` : NASA_API_URL;
 
   try {
-    // إظهار علامة التحميل وإخفاء الصورة مؤقتاً
+    
     const loadingEl = document.getElementById("apod-loading");
     const imgEl = document.getElementById("apod-image");
     if (loadingEl) loadingEl.style.display = "block";
@@ -51,7 +51,7 @@ async function fetchNASAData(date = "") {
 
     const data = await getJson(url);
 
-    // حقن البيانات في ملف الـ HTML الخاص بك
+    
     if (imgEl && data.media_type === "image" && data.url) {
       imgEl.src = data.url;
       imgEl.alt = data.title || "Astronomy Picture of the Day";
@@ -91,7 +91,7 @@ async function fetchNASAData(date = "") {
   }
 }
 
-// تشغيل أزرار التاريخ (Load & Today)
+
 document.getElementById("load-date-btn")?.addEventListener("click", () => {
   const selectedDate = document.getElementById("apod-date-input").value;
   if (selectedDate) fetchNASAData(selectedDate);
@@ -102,14 +102,14 @@ document.getElementById("today-apod-btn")?.addEventListener("click", () => {
   fetchNASAData();
 });
 
-// ==========================================
-// 3. قسم Upcoming Launches (SpaceDevs)
-// ==========================================
+
+
+
 async function fetchLaunchesData() {
   try {
     const data = await getJson(LAUNCHES_API_URL);
 
-    // تحديث عدد الرحلات في الـ Header
+    
     document.getElementById("launches-count").textContent =
       `${data.results?.length || 0} Launches`;
     document.getElementById("launches-count-mobile").textContent =
@@ -117,9 +117,9 @@ async function fetchLaunchesData() {
 
     const grid = document.getElementById("launches-grid");
     if (!grid) return;
-    grid.innerHTML = ""; // تفريغ المحتوى الثابت (Static)
+    grid.innerHTML = ""; 
 
-    // رسم كروت الرحلات ديناميكياً
+    
     (data.results || []).forEach((launch) => {
       const launchDate = new Date(launch.net);
       const date = launchDate.toLocaleDateString("en-US", {
@@ -133,7 +133,7 @@ async function fetchLaunchesData() {
         timeZoneName: "short",
       });
 
-      // تحديد لون الحالة (Go = أخضر, TBD/TBC = أصفر/أزرق)
+      
       let statusColor = "bg-blue-500/90";
       if (["Go", "Success"].includes(getLaunchStatus(launch)))
         statusColor = "bg-green-500/90";
@@ -176,20 +176,20 @@ async function fetchLaunchesData() {
   }
 }
 
-// ==========================================
-// 4. قسم Planets (Solar System)
-// ==========================================
+
+
+
 async function fetchPlanetsData() {
   try {
     const data = await getJson(PLANETS_API_URL);
 
-    // تصفية الكواكب فقط (8 كواكب)
+    
     const planets = (data.bodies || []).filter(
       (body) => body.isPlanet === true,
     );
     const allPlanetsData = planets;
 
-    // دالة لتحديث قسم تفاصيل الكوكب عند النقر عليه
+    
     window.updatePlanetDetails = (planetName) => {
       const planet = allPlanetsData.find(
         (p) => p.englishName.toLowerCase() === planetName.toLowerCase(),
@@ -225,7 +225,7 @@ async function fetchPlanetsData() {
         ? `${(planet.escape / 1000).toFixed(2)} km/s`
         : "N/A";
 
-      // تغيير صورة الكوكب بناءً على الاسم
+      
       document.getElementById("planet-detail-image").src =
         planetImagePaths[planet.englishName.toLowerCase()] || "";
     };
@@ -251,7 +251,7 @@ async function fetchPlanetsData() {
       });
     }
 
-    // تفعيل الضغط على كروت الكواكب بعد إنشائها من بيانات API
+    
     const planetCards = document.querySelectorAll(".planet-card");
     planetCards.forEach((card) => {
       card.addEventListener("click", () => {
@@ -264,9 +264,9 @@ async function fetchPlanetsData() {
   }
 }
 
-// ==========================================
-// 5. تهيئة تشغيل الأقسام عند تحميل الصفحة
-// ==========================================
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
   const navLinks = document.querySelectorAll(".nav-link[data-section]");
   const sections = document.querySelectorAll(".app-section[data-section]");
