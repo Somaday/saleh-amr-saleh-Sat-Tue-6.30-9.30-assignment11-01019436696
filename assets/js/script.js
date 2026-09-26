@@ -1,7 +1,7 @@
 const NASA_API_URL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY";
 const LAUNCHES_API_URL = "https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10";
 const PLANETS_API_URL = "https://api.le-systeme-solaire.net/rest/bodies/";
-const SOLAR_SYSTEM_API_TOKEN = "PUT_YOUR_FREE_TOKEN_HERE";
+const SOLAR_SYSTEM_API_TOKEN = "8b64f88c-c436-4f3b-822d-8005fcab6527";
 
 const LAUNCH_PLACEHOLDER = "./assets/images/launch-placeholder.png";
 const AU_IN_KM = 149597870.7;
@@ -24,8 +24,8 @@ const toSuperscript = (value) =>
     .map((ch) => superscriptMap[ch] ?? ch)
     .join("");
 
-const getJson = async (url, headers = {}) => {
-  const response = await fetch(url, { headers });
+const getJson = async (url, options = {}) => {
+  const response = await fetch(url, options);
   if (!response.ok) {
     throw new Error(`Request failed (${response.status}): ${url}`);
   }
@@ -215,11 +215,14 @@ async function fetchLaunchesData() {
 async function fetchPlanetsData() {
   const planetsGrid = document.getElementById("planets-grid");
   try {
-    const data = await getJson(PLANETS_API_URL, {
-      Authorization: `Bearer ${SOLAR_SYSTEM_API_TOKEN}`,
-    });
+    // محاولة جلب البيانات بـ Token أو بشكل رئيسي بدون معوقات CORS
+    let url = `${PLANETS_API_URL}?filter[]=isPlanet,eq,true`;
+    if (SOLAR_SYSTEM_API_TOKEN) {
+      url += `&key=${SOLAR_SYSTEM_API_TOKEN}`;
+    }
 
-    const planets = (data.bodies || []).filter((body) => body.isPlanet === true);
+    const data = await getJson(url);
+    const planets = data.bodies || [];
 
     window.updatePlanetDetails = (planetName) => {
       const planet = planets.find((p) => p.englishName.toLowerCase() === planetName.toLowerCase());
@@ -293,7 +296,7 @@ async function fetchPlanetsData() {
   } catch (error) {
     console.error("Error fetching Planets:", error);
     if (planetsGrid) {
-      planetsGrid.innerHTML = `<div class="col-span-full text-center text-red-400 py-8">Unable to load planet data. Make sure a valid Solar System OpenData API token is set in SOLAR_SYSTEM_API_TOKEN.</div>`;
+      planetsGrid.innerHTML = `<div class="col-span-full text-center text-red-400 py-8">Unable to load planet data. Make sure a valid Solar System OpenData API token is set.</div>`;
     }
   }
 }
