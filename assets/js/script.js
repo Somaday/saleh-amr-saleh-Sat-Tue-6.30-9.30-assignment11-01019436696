@@ -1,9 +1,9 @@
-const NASA_API_URL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY";
+const NASA_API_KEY = "JB4maszIzdCvd6Mow1hPe3bb5uYCccSD3257a3gL";
+const NASA_API_URL = `https://api.nasa.gov/planetary/apod?api_key=${NASA_API_KEY}`;
 const LAUNCHES_API_URL = "https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10";
 const PLANETS_API_URL = "https://api.le-systeme-solaire.net/rest/bodies/";
-const SOLAR_SYSTEM_API_TOKEN = "8b64f88c-c436-4f3b-822d-8005fcab6527";
 
-const LAUNCH_PLACEHOLDER = "./assets/images/launch-placeholder.png";
+const LAUNCH_PLACEHOLDER = "./assets/images/placeholder.webp";
 const AU_IN_KM = 149597870.7;
 
 const planetImagePaths = {
@@ -87,7 +87,7 @@ async function fetchNASAData(date = "") {
     const imgEl = document.getElementById("apod-image");
     if (loadingEl) {
       loadingEl.textContent = "";
-      loadingEl.innerHTML = `<i class="fas fa-spinner fa-spin text-4xl text-blue-400 mb-4"></i><p class="text-slate-400">Loading today's image...</p>`;
+      loadingEl.innerHTML = `<i class="fas fa-spinner fa-spin text-4xl text-blue-400 mb-4"></i><p class="text-slate-400">Loading image...</p>`;
       loadingEl.style.display = "block";
     }
     if (imgEl) imgEl.style.display = "none";
@@ -130,24 +130,10 @@ async function fetchNASAData(date = "") {
     const loadingEl = document.getElementById("apod-loading");
     if (loadingEl) {
       loadingEl.style.display = "block";
-      loadingEl.innerHTML = `<p class="text-red-400">Failed to load today's image. ${error.message}</p>`;
+      loadingEl.innerHTML = `<p class="text-red-400">Failed to load image. ${error.message}</p>`;
     }
   }
 }
-
-document.getElementById("load-date-btn")?.addEventListener("click", () => {
-  const selectedDate = document.getElementById("apod-date-input").value;
-  if (selectedDate) fetchNASAData(selectedDate);
-});
-
-document.getElementById("today-apod-btn")?.addEventListener("click", () => {
-  document.getElementById("apod-date-input").value = "";
-  fetchNASAData();
-});
-
-document.getElementById("apod-date-input")?.addEventListener("change", (event) => {
-  syncDateDisplay(event.target.value);
-});
 
 async function fetchLaunchesData() {
   const grid = document.getElementById("launches-grid");
@@ -215,11 +201,7 @@ async function fetchLaunchesData() {
 async function fetchPlanetsData() {
   const planetsGrid = document.getElementById("planets-grid");
   try {
-    // محاولة جلب البيانات بـ Token أو بشكل رئيسي بدون معوقات CORS
-    let url = `${PLANETS_API_URL}?filter[]=isPlanet,eq,true`;
-    if (SOLAR_SYSTEM_API_TOKEN) {
-      url += `&key=${SOLAR_SYSTEM_API_TOKEN}`;
-    }
+    const url = `${PLANETS_API_URL}?filter[]=isPlanet,eq,true`;
 
     const data = await getJson(url);
     const planets = data.bodies || [];
@@ -265,30 +247,10 @@ async function fetchPlanetsData() {
       });
     };
 
-    if (planetsGrid) {
-      planetsGrid.innerHTML = "";
-      planets.forEach((planet) => {
-        const card = document.createElement("article");
-        const planetId = planet.englishName.toLowerCase();
-        card.className =
-          "planet-card bg-slate-800/50 border border-slate-700 rounded-2xl p-4 transition-all cursor-pointer group";
-        card.dataset.planetId = planetId;
-        card.innerHTML = `
-                    <div class="relative mb-3 h-24 flex items-center justify-center">
-                        <img class="w-20 h-20 object-contain group-hover:scale-110 transition-transform" src="${planetImagePaths[planetId] || ""}" alt="${planet.englishName}">
-                    </div>
-                    <h4 class="font-semibold text-center text-sm">${planet.englishName}</h4>
-                    <p class="text-xs text-slate-400 text-center">Gravity: ${planet.gravity ?? "N/A"} m/s²</p>
-                    <p class="text-xs text-slate-400 text-center">Density: ${planet.density ?? "N/A"} g/cm³</p>
-                `;
-        planetsGrid.appendChild(card);
-      });
-    }
-
     document.querySelectorAll(".planet-card").forEach((card) => {
       card.addEventListener("click", () => {
         const planetId = card.getAttribute("data-planet-id");
-        window.updatePlanetDetails(planetId);
+        if (planetId) window.updatePlanetDetails(planetId);
       });
     });
 
@@ -296,7 +258,7 @@ async function fetchPlanetsData() {
   } catch (error) {
     console.error("Error fetching Planets:", error);
     if (planetsGrid) {
-      planetsGrid.innerHTML = `<div class="col-span-full text-center text-red-400 py-8">Unable to load planet data. Make sure a valid Solar System OpenData API token is set.</div>`;
+      planetsGrid.innerHTML = `<div class="col-span-full text-center text-red-400 py-8">Unable to load planet data. Please try again later.</div>`;
     }
   }
 }
@@ -341,6 +303,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   sidebarToggle?.addEventListener("click", () => {
     sidebar?.classList.toggle("sidebar-mobile");
+  });
+
+  document.getElementById("load-date-btn")?.addEventListener("click", () => {
+    const selectedDate = document.getElementById("apod-date-input").value;
+    if (selectedDate) fetchNASAData(selectedDate);
+  });
+
+  document.getElementById("today-apod-btn")?.addEventListener("click", () => {
+    document.getElementById("apod-date-input").value = "";
+    fetchNASAData();
+  });
+
+  document.getElementById("apod-date-input")?.addEventListener("change", (event) => {
+    syncDateDisplay(event.target.value);
   });
 
   const initialSection = window.location.hash.slice(1);
